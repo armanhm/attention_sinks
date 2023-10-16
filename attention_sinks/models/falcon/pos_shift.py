@@ -51,11 +51,7 @@ def falcon_pos_shift_attention_forward(
         value_layer = torch.cat((past_value, value_layer), dim=1)
 
     _, kv_length, _ = key_layer.shape
-    if use_cache:
-        present = (key_layer, value_layer)
-    else:
-        present = None
-
+    present = (key_layer, value_layer) if use_cache else None
     # CHANGED:
     key_layer_copy = key_layer.clone()
     key_position_ids = torch.arange(kv_length, device=position_ids.device).unsqueeze(0)
@@ -103,7 +99,7 @@ def falcon_pos_shift_attention_forward(
         # cast attention scores to fp32, compute scaled softmax and cast back to initial dtype - [batch_size, num_heads, q_length, kv_length]
         input_dtype = attention_scores.dtype
         # `float16` has a minimum value of -65504.0, whereas `bfloat16` and `float32` have a minimum value of `-3.4e+38`
-        if input_dtype == torch.float16 or input_dtype == torch.bfloat16:
+        if input_dtype in [torch.float16, torch.bfloat16]:
             attention_scores = attention_scores.to(torch.float32)
         # Matt (HF) note: We could possibly use F.scaled_dot_product_attention here too, by
         # adding (alibi * self.inv_norm_factor) to attention_mask_float. I think this would be mathematically

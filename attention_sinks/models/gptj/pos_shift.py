@@ -66,11 +66,7 @@ def gptj_pos_shift_attention_forward(
         key = torch.cat((past_key, key), dim=-2)
         value = torch.cat((past_value, value), dim=-2)
 
-    if use_cache is True:
-        present = (key, value)
-    else:
-        present = None
-
+    present = (key, value) if use_cache is True else None
     key_position_ids = torch.arange(key.shape[-2], device=position_ids.device).unsqueeze(0)
     repeated_key_position_ids = key_position_ids.unsqueeze(-1).repeat(1, 1, embed_positions.shape[-1])
     sincos = torch.gather(embed_positions, 1, repeated_key_position_ids)

@@ -15,8 +15,7 @@ def apply_rotary_pos_emb_single(x, cos, sin, position_ids):
     sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
     cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
     sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
-    x_embed = (x * cos) + (rotate_half(x) * sin)
-    return x_embed
+    return (x * cos) + (rotate_half(x) * sin)
 
 
 def mistral_pos_shift_attention_forward(

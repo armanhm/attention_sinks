@@ -17,8 +17,7 @@ def apply_rotary_pos_emb_single(x, cos, sin, position_ids):
     gather_indices = gather_indices.repeat(1, cos.shape[1], 1, cos.shape[3])
     cos = torch.gather(cos.repeat(gather_indices.shape[0], 1, 1, 1), 2, gather_indices)
     sin = torch.gather(sin.repeat(gather_indices.shape[0], 1, 1, 1), 2, gather_indices)
-    x_embed = (x * cos) + (rotate_half(x) * sin)
-    return x_embed
+    return (x * cos) + (rotate_half(x) * sin)
 
 
 def gpt_neox_pos_shift_attention_forward(
