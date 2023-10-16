@@ -102,7 +102,7 @@ class AttentionSinkKVCache:
         if past_key_values is None:
             return None
         seq_len = past_key_values[0][0].size(self.k_seq_dim)
-        assert start <= end and end <= seq_len
+        assert start <= end <= seq_len
         return [
             [
                 torch.cat(

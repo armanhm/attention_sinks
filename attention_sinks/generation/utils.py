@@ -23,16 +23,7 @@ def _update_model_kwargs_for_generation(
         token_type_ids = model_kwargs["token_type_ids"]
         model_kwargs["token_type_ids"] = torch.cat([token_type_ids, token_type_ids[:, -1].unsqueeze(-1)], dim=-1)
 
-    if not is_encoder_decoder:
-        # update attention mask
-        if "attention_mask" in model_kwargs:
-            attention_mask = model_kwargs["attention_mask"]
-            # Only this `if`-statement is changed, it's required to stop the attention_mask from extending itself too far
-            if model_kwargs["attention_mask"].size(-1) == model_kwargs["past_key_values"][0][0].size(2):
-                model_kwargs["attention_mask"] = torch.cat(
-                    [attention_mask, attention_mask.new_ones((attention_mask.shape[0], 1))], dim=-1
-                )
-    else:
+    if is_encoder_decoder:
         # update decoder attention mask
         if "decoder_attention_mask" in model_kwargs:
             decoder_attention_mask = model_kwargs["decoder_attention_mask"]
@@ -41,4 +32,11 @@ def _update_model_kwargs_for_generation(
                 dim=-1,
             )
 
+    elif "attention_mask" in model_kwargs:
+        attention_mask = model_kwargs["attention_mask"]
+        # Only this `if`-statement is changed, it's required to stop the attention_mask from extending itself too far
+        if model_kwargs["attention_mask"].size(-1) == model_kwargs["past_key_values"][0][0].size(2):
+            model_kwargs["attention_mask"] = torch.cat(
+                [attention_mask, attention_mask.new_ones((attention_mask.shape[0], 1))], dim=-1
+            )
     return model_kwargs

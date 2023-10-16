@@ -21,8 +21,7 @@ def apply_rotary_pos_emb_single(x, cos, sin, position_ids):
     sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
     cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
     sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
-    x_embed = (x * cos) + (rotate_half(x) * sin)
-    return x_embed
+    return (x * cos) + (rotate_half(x) * sin)
 
 
 def llama_pos_shift_attention_forward(
@@ -117,7 +116,10 @@ def llama_pos_shift_attention_forward(
     if self.config.pretraining_tp > 1:
         attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
         o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp, dim=1)
-        attn_output = sum([F.linear(attn_output[i], o_proj_slices[i]) for i in range(self.config.pretraining_tp)])
+        attn_output = sum(
+            F.linear(attn_output[i], o_proj_slices[i])
+            for i in range(self.config.pretraining_tp)
+        )
     else:
         attn_output = self.o_proj(attn_output)
 
